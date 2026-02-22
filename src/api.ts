@@ -1,16 +1,11 @@
 // src/api.ts
-export type AnalyzeResponse = { output: string };
+type AnalyzeResponse = { output: string };
 
 const API_BASE =
-  (import.meta as any).env?.VITE_API_URL?.replace(/\/$/, "") || "";
+  (import.meta as any).env?.VITE_BACKEND_URL?.replace(/\/$/, "") ||
+  "http://localhost:3000";
 
-export async function analyzeImage(imageUrl: string): Promise<AnalyzeResponse> {
-  if (!API_BASE) {
-    throw new Error(
-      "VITE_API_URL non impostata. Metti l'URL del backend su Railway in VITE_API_URL."
-    );
-  }
-
+export async function analyzeProductImage(imageUrl: string): Promise<AnalyzeResponse> {
   const res = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -19,8 +14,8 @@ export async function analyzeImage(imageUrl: string): Promise<AnalyzeResponse> {
 
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
-    throw new Error(`API /analyze error ${res.status}: ${txt}`);
+    throw new Error(`Backend error ${res.status}: ${txt || res.statusText}`);
   }
 
-  return res.json();
+  return (await res.json()) as AnalyzeResponse;
 }
